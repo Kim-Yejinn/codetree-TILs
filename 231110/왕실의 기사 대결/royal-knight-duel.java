@@ -77,6 +77,9 @@ public class Main {
                     knights[j].r += dr[d];
                     knights[j].c += dc[d];
                 }
+//                System.out.println(Arrays.toString(moveKnights));
+//                System.out.println(Arrays.toString(demage));
+//                System.out.println(Arrays.toString(endurance));
             }
         }
 
@@ -105,20 +108,20 @@ public class Main {
         while(!q.isEmpty()){
             int t = q.poll();
             Knight temp = knights[t];
-
+//            System.out.println("queue"+t);
             // 기사 이동 경로가 범위가 넘어가는가?
             int nr = temp.r + dr[dir];
             int nc = temp.c + dc[dir];
 
-            int fr = nr+temp.w -1;
-            int fc = nc+temp.h -1;
+            int fr = nr+temp.h -1;
+            int fc = nc+temp.w -1;
 
             if(nr<0 || nc < 0 || fr >= L || fc >= L){
                 return false;
             }
             for(int r=nr; r<=fr; r++){
                 for(int c=nc; c<=fc; c++){
-                    if(map[r][c] == 1){
+                    if(map[r][c] == 1 && t!=idx){
                         demage[t]++;
                     }
                     if(map[r][c] == 2){
@@ -136,9 +139,14 @@ public class Main {
                 int nextFr = next.r + next.h -1;
                 int nextFc = next.c + next.w -1;
 
+
                 if(endurance[i] <= 0){
                     continue;
                 }
+//                System.out.println(nr+"/"+nc);
+//                System.out.println(fr+"/"+fc);
+//                System.out.println(next.r+"/"+next.c);
+//                System.out.println(nextFr+"/"+nextFc);
                 if(nextFr < nr || next.r > fr){
                     continue;
                 }
@@ -149,7 +157,7 @@ public class Main {
                 moveKnights[i] = true;
             }
         }
-        
+
         return true;
     }
 }

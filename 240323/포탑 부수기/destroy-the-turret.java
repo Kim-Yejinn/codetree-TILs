@@ -39,12 +39,10 @@ public class Main {
     static class findNode{
         int r;
         int c;
-        int dis;
 
-        findNode(int r, int c, int dis){
+        findNode(int r, int c){
             this.r = r;
             this.c = c;
-            this.dis = dis;
         }
     }
     static int N;
@@ -52,7 +50,8 @@ public class Main {
     static int K;
     static int[][] arr;
     static int[][] time;
-    static int[][] visit;
+    static boolean[][] visit;
+    static int[][] dir;
     static List<Node> list;
     static boolean[][] isAttacked;
 
@@ -63,8 +62,8 @@ public class Main {
     static int[] dc = {1, 0, -1, 0};
 
     // 하우 상좌
-    static int[] ddr = {1, 0, -1, 0};
-    static int[] ddc = {0, 1, 0, -1};
+    static int[] ddr = {0, -1, 0, 1};
+    static int[] ddc = {-1, 0, 1, 0};
 
     static int[] dr8 = {1, 0, -1, 0, 1, 1, -1, -1};
     static int[] dc8 = {0, 1, 0, -1, 1, -1, 1, -1};
@@ -90,6 +89,10 @@ public class Main {
         for(int t=1; t<=K; t++){
             curTime = t;
             find();
+
+            if(list.size() == 1){
+                break;
+            }
             attack();
             heal();
         }
@@ -134,16 +137,12 @@ public class Main {
     }
 
     public static boolean findLoad(Node atk, Node def){
-        visit = new int[N][M];
-        for(int r=0; r<N; r++){
-            for(int c=0; c<M; c++){
-                visit[r][c] = Integer.MAX_VALUE;
-            }
-        }
+        visit = new boolean[N][M];
+        dir = new int[N][M];
 
         Queue<findNode> q = new LinkedList<>();
-        q.offer(new findNode(atk.r, atk.c, 1));
-        visit[atk.r][atk.c] = 1;
+        q.offer(new findNode(atk.r, atk.c));
+        visit[atk.r][atk.c] = true;
 
         while (!q.isEmpty()){
             findNode temp = q.poll();
@@ -159,14 +158,15 @@ public class Main {
                 nr = (nr+N) % N;
                 nc = (nc+M) % M;
 
-                if(arr[nr][nc] == 0){
+                if(arr[nr][nc] <= 0){
                     continue;
                 }
-                if(visit[nr][nc] <= temp.dis+1){
+                if(visit[nr][nc]){
                     continue;
                 }
-                visit[nr][nc] = temp.dis+1;
-                q.offer(new findNode(nr, nc, temp.dis+1));
+                visit[nr][nc] = true;
+                dir[nr][nc] = i;
+                q.offer(new findNode(nr, nc));
             }
         }
         return false;
@@ -174,7 +174,7 @@ public class Main {
 
     public static void lazer(Node atk, Node def){
         Queue<findNode> q = new LinkedList<>();
-        q.offer(new findNode(def.r, def.c, visit[def.r][def.c]));
+        q.offer(new findNode(def.r, def.c));
 
         int dmg = atk.strong + N + M;
         int halfDmg = dmg/2;
@@ -188,18 +188,14 @@ public class Main {
             }
             arr[temp.r][temp.c] -= halfDmg;
 
-            for(int i=0; i<4; i++){
-                int nr = temp.r + ddr[i];
-                int nc = temp.c + ddc[i];
+            int direct = dir[temp.r][temp.c];
+            int nr = temp.r + ddr[direct];
+            int nc = temp.c + ddc[direct];
 
-                nr = (nr + N) % N;
-                nc = (nc + M) % M;
+            nr = (nr+N) % N;
+            nc = (nc+M) % M;
 
-                if(visit[nr][nc] == temp.dis-1){
-                    q.offer(new findNode(nr, nc, temp.dis-1));
-                    break;
-                }
-            }
+            q.offer(new findNode(nr, nc));
         }
 
         arr[def.r][def.c] = arr[def.r][def.c] + halfDmg - dmg;
@@ -224,6 +220,9 @@ public class Main {
             nr = (nr + N) % N;
             nc = (nc + M) % M;
 
+            if(nr == atk.r && nc == atk.c){
+                continue;
+            }
             arr[nr][nc] -= halfDmg;
             isAttacked[nr][nc] = true;
         }
